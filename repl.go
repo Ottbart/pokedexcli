@@ -5,12 +5,19 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/Ottbart/pokedexcli/internal/pokeAPI"
 )
 
 type command struct {
 	name        string
 	description string
 	callback    func() error
+}
+
+type config struct {
+	previous string
+	next     string
 }
 
 var cliCommands map[string]command
@@ -26,6 +33,11 @@ func startRepl() {
 			name:        "exit",
 			description: "Exit the Pokedex",
 			callback:    commandExit,
+		},
+		"map": {
+			name:        "map",
+			description: "Display list of areas on the map of the Pokemon world",
+			callback:    commandMap,
 		},
 	}
 	// Create a new scanner to read from standard input
@@ -51,19 +63,38 @@ func startRepl() {
 	}
 }
 
-func commandExit() error {
+func commandExit(cfg *config) error {
 	// Exit the program with a status code of 0 (success)
 	fmt.Print("Closing the Pokedex... Goodbye!\n")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp() error {
+func commandHelp(cfg *config) error {
 	// Display available commands and their descriptions
-	fmt.Println("Welcome to the Pokedex!\nUsage:\n")
+	fmt.Println("Welcome to the Pokedex!")
+	fmt.Println("Usage:")
 	for _, cmd := range cliCommands {
 		fmt.Printf("%s: %s\n", cmd.name, cmd.description)
 	}
+	return nil
+}
+
+func commandMap(cfg *config) error {
+	// Display a list of areas on the map of the Pokemon world
+	type Map struct {
+		Count    int    `json:"count"`
+		Next     string `json:"next"`
+		Previous string `json:"previous"`
+		Results  []struct {
+			Name string `json:"name"`
+			URL  string `json:"url"`
+		} `json:"results"`
+	}
+	mapData := Map{}
+	endpoint := "location-area/" //empty location area endpoint to get bunch of location areas
+	currentMap := pokeAPI.GetPokeData(endpoint)
+	pokeAPI.json2struct([]byte(currentMap), &mapData)
 	return nil
 }
 
