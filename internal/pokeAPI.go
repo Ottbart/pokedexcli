@@ -8,9 +8,7 @@ import (
 )
 
 func GetPokeData(endpoint string) string {
-	baseURL := "https://pokeapi.co/api/v2/"
-	URLwithDataType := baseURL + endpoint
-	res, err := http.Get(URLwithDataType)
+	res, err := http.Get(endpoint)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,7 +23,7 @@ func GetPokeData(endpoint string) string {
 	return string(body)
 }
 
-func json2struct(jsonString []byte, targetStruct interface{}) error {
+func JSON2Struct(jsonString []byte, targetStruct interface{}) error {
 	err := json.Unmarshal(jsonString, targetStruct)
 	if err != nil {
 		log.Fatal(err)

@@ -6,18 +6,23 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Ottbart/pokedexcli/internal/pokeAPI"
+	pokeAPI "github.com/Ottbart/pokedexcli/internal"
 )
 
 type command struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*config) error
 }
 
 type config struct {
-	previous string
-	next     string
+	Count    int    `json:"count"`
+	Previous string `json:"previous"`
+	Next     string `json:"next"`
+	Results  []struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"results"`
 }
 
 var cliCommands map[string]command
@@ -36,12 +41,18 @@ func startRepl() {
 		},
 		"map": {
 			name:        "map",
-			description: "Display list of areas on the map of the Pokemon world",
+			description: "Display list of next areas on the map of the Pokemon world",
 			callback:    commandMap,
+		},
+		"mapback": {
+			name:        "mapb",
+			description: "Display list of previous areas on the map of the Pokemon world",
+			callback:    commandMapBack,
 		},
 	}
 	// Create a new scanner to read from standard input
 	scanner := bufio.NewScanner(os.Stdin)
+	cfg := &config{}
 
 	// Start an infinite loop to continuously read user input
 	for {
@@ -53,7 +64,9 @@ func startRepl() {
 		cleanedInput := cleanInput(input)
 
 		if cmd, exists := cliCommands[cleanedInput[0]]; exists {
-			cmd.callback()
+			if err := cmd.callback(cfg); err != nil {
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+			}
 		}
 	}
 
@@ -82,19 +95,37 @@ func commandHelp(cfg *config) error {
 
 func commandMap(cfg *config) error {
 	// Display a list of areas on the map of the Pokemon world
-	type Map struct {
-		Count    int    `json:"count"`
-		Next     string `json:"next"`
-		Previous string `json:"previous"`
-		Results  []struct {
-			Name string `json:"name"`
-			URL  string `json:"url"`
-		} `json:"results"`
+	var endpoint string
+	if cfg.Next == "" {
+		endpoint = "https://pokeapi.co/api/v2/location-area/"
+	} else {
+		endpoint = cfg.Next
 	}
-	mapData := Map{}
-	endpoint := "location-area/" //empty location area endpoint to get bunch of location areas
 	currentMap := pokeAPI.GetPokeData(endpoint)
-	pokeAPI.json2struct([]byte(currentMap), &mapData)
+
+	pokeAPI.JSON2Struct([]byte(currentMap), cfg)
+
+	for _, area := range cfg.Results {
+		fmt.Println(area.Name)
+	}
+	return nil
+}
+
+func commandMapBack(cfg *config) error {
+	// Display a list of areas on the map of the Pokemon world
+	var endpoint string
+	if cfg.Previous == "" {
+		endpoint = "https://pokeapi.co/api/v2/location-area/"
+	} else {
+		endpoint = cfg.Previous
+	}
+	currentMap := pokeAPI.GetPokeData(endpoint)
+
+	pokeAPI.JSON2Struct([]byte(currentMap), cfg)
+
+	for _, area := range cfg.Results {
+		fmt.Println(area.Name)
+	}
 	return nil
 }
 
