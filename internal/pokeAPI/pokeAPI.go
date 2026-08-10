@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"io"
 	"log"
-	"net/http"
 )
 
-func GetPokeData(endpoint string) string {
-	res, err := http.Get(endpoint)
+func (c *Client) GetPokeData(endpoint string) string {
+	// Use the httpClient from the Client struct to make the GET request
+	res, err := c.httpClient.Get(endpoint)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -24,6 +24,7 @@ func GetPokeData(endpoint string) string {
 }
 
 func JSON2Struct(jsonString []byte, targetStruct interface{}) error {
+	// Unmarshal the JSON string into the provided target struct
 	err := json.Unmarshal(jsonString, targetStruct)
 	if err != nil {
 		log.Fatal(err)

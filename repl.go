@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
-	pokeAPI "github.com/Ottbart/pokedexcli/internal"
 )
 
 type command struct {
@@ -67,6 +65,8 @@ func startRepl() {
 			if err := cmd.callback(cfg); err != nil {
 				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			}
+		} else {
+			fmt.Fprintf(os.Stderr, "Unknown command: %s\n", cleanedInput[0])
 		}
 	}
 
@@ -74,59 +74,6 @@ func startRepl() {
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading input: %v\n", err)
 	}
-}
-
-func commandExit(cfg *config) error {
-	// Exit the program with a status code of 0 (success)
-	fmt.Print("Closing the Pokedex... Goodbye!\n")
-	os.Exit(0)
-	return nil
-}
-
-func commandHelp(cfg *config) error {
-	// Display available commands and their descriptions
-	fmt.Println("Welcome to the Pokedex!")
-	fmt.Println("Usage:")
-	for _, cmd := range cliCommands {
-		fmt.Printf("%s: %s\n", cmd.name, cmd.description)
-	}
-	return nil
-}
-
-func commandMap(cfg *config) error {
-	// Display a list of areas on the map of the Pokemon world
-	var endpoint string
-	if cfg.Next == "" {
-		endpoint = "https://pokeapi.co/api/v2/location-area/"
-	} else {
-		endpoint = cfg.Next
-	}
-	currentMap := pokeAPI.GetPokeData(endpoint)
-
-	pokeAPI.JSON2Struct([]byte(currentMap), cfg)
-
-	for _, area := range cfg.Results {
-		fmt.Println(area.Name)
-	}
-	return nil
-}
-
-func commandMapBack(cfg *config) error {
-	// Display a list of areas on the map of the Pokemon world
-	var endpoint string
-	if cfg.Previous == "" {
-		endpoint = "https://pokeapi.co/api/v2/location-area/"
-	} else {
-		endpoint = cfg.Previous
-	}
-	currentMap := pokeAPI.GetPokeData(endpoint)
-
-	pokeAPI.JSON2Struct([]byte(currentMap), cfg)
-
-	for _, area := range cfg.Results {
-		fmt.Println(area.Name)
-	}
-	return nil
 }
 
 func cleanInput(text string) []string {
