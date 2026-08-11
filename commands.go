@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-
-	pokeAPI "github.com/Ottbart/pokedexcli/internal"
 )
 
 func commandExit(cfg *config) error {
@@ -25,36 +23,32 @@ func commandHelp(cfg *config) error {
 }
 
 func commandMap(cfg *config) error {
-	// Display a list of areas on the map of the Pokemon world
-	var endpoint string
-	if cfg.Next == "" {
-		endpoint = "https://pokeapi.co/api/v2/location-area/"
-	} else {
-		endpoint = cfg.Next
+	// Display a list of next areas on the map of the Pokemon world
+	locationsResp, err := cfg.pokeapiClient.GetLocations(cfg.nextLocationsURL)
+	if err != nil {
+		return err
 	}
-	currentMap := pokeAPI.GetPokeData(endpoint)
 
-	pokeAPI.JSON2Struct([]byte(currentMap), cfg)
+	cfg.nextLocationsURL = locationsResp.Next
+	cfg.prevLocationsURL = locationsResp.Previous
 
-	for _, area := range cfg.Results {
+	for _, area := range locationsResp.Results {
 		fmt.Println(area.Name)
 	}
 	return nil
 }
 
 func commandMapBack(cfg *config) error {
-	// Display a list of areas on the map of the Pokemon world
-	var endpoint string
-	if cfg.Previous == "" {
-		endpoint = "https://pokeapi.co/api/v2/location-area/"
-	} else {
-		endpoint = cfg.Previous
+	// Display a list of previous areas on the map of the Pokemon world
+	locationsResp, err := cfg.pokeapiClient.GetLocations(cfg.prevLocationsURL)
+	if err != nil {
+		return err
 	}
-	currentMap := pokeAPI.GetPokeData(endpoint)
 
-	pokeAPI.JSON2Struct([]byte(currentMap), cfg)
+	cfg.nextLocationsURL = locationsResp.Next
+	cfg.prevLocationsURL = locationsResp.Previous
 
-	for _, area := range cfg.Results {
+	for _, area := range locationsResp.Results {
 		fmt.Println(area.Name)
 	}
 	return nil

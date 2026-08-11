@@ -1,5 +1,15 @@
 package main
 
+import (
+	"time"
+
+	"github.com/Ottbart/pokedexcli/internal/pokeAPI"
+)
+
 func main() {
-	startRepl()
+	pokeClient := pokeAPI.NewClient(5*time.Second, 10*time.Second)
+	cfg := &config{
+		pokeapiClient: pokeClient,
+	}
+	startRepl(cfg)
 }

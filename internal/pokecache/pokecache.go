@@ -15,7 +15,8 @@ type cacheEntry struct {
 	val       []byte
 }
 
-func NewCache(interval) *Cache {
+func NewCache(interval time.Duration) *Cache {
+	// Create a new Cache instance with an empty cacheContent map and start the reapLoop in a separate goroutine
 	c := &Cache{
 		cacheContent: make(map[string]cacheEntry),
 	}
@@ -27,18 +28,17 @@ func NewCache(interval) *Cache {
 func (c *Cache) Add(key string, val []byte) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
+	// Add a new cache entry with the current time and the provided value to the cacheContent map
 	c.cacheContent[key] = cacheEntry{
 		createdAt: time.Now(),
 		val:       val,
 	}
-
 }
 
 func (c *Cache) Get(key string) ([]byte, bool) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
-
+	// Retrieve a cache entry from the cacheContent map based on the provided key
 	entry, ok := c.cacheContent[key]
 	if !ok {
 		return nil, false
@@ -47,6 +47,7 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 }
 
 func (c *Cache) reapLoop(interval time.Duration) {
+	// Start a ticker that triggers every 'interval' duration to clean up expired cache entries
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 

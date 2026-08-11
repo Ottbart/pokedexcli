@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/Ottbart/pokedexcli/internal/pokeAPI"
 )
 
 type command struct {
@@ -14,18 +16,14 @@ type command struct {
 }
 
 type config struct {
-	Count    int    `json:"count"`
-	Previous string `json:"previous"`
-	Next     string `json:"next"`
-	Results  []struct {
-		Name string `json:"name"`
-		URL  string `json:"url"`
-	} `json:"results"`
+	pokeapiClient    pokeAPI.Client
+	nextLocationsURL *string
+	prevLocationsURL *string
 }
 
 var cliCommands map[string]command
 
-func startRepl() {
+func startRepl(cfg *config) {
 	cliCommands = map[string]command{
 		"help": {
 			name:        "help",
@@ -50,7 +48,6 @@ func startRepl() {
 	}
 	// Create a new scanner to read from standard input
 	scanner := bufio.NewScanner(os.Stdin)
-	cfg := &config{}
 
 	// Start an infinite loop to continuously read user input
 	for {
