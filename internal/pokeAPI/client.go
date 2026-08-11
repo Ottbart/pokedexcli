@@ -1,4 +1,4 @@
-package pokeAPI
+package pokeapi
 
 import (
 	"net/http"

@@ -2,6 +2,7 @@ package pokeAPI
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 )
 
@@ -10,18 +11,26 @@ func (c *Client) GetLocations(nextLocationsURL *string) (Locations, error) {
 	if nextLocationsURL != nil {
 		url = *nextLocationsURL
 	}
-	res, err := c.httpClient.Get(url)
-	if err != nil {
-		return Locations{}, err
+	var data []byte
+	if cached, exists := c.cache.Get(url); exists {
+		data = cached
+	} else {
+		res, err := c.httpClient.Get(url)
+		if err != nil {
+			return Locations{}, err
+		}
+		defer res.Body.Close()
+		if res.StatusCode > 299 {
+			return Locations{}, fmt.Errorf("response failed with status code: %d", res.StatusCode)
+		}
+		data, err = io.ReadAll(res.Body)
+		if err != nil {
+			return Locations{}, err
+		}
+		c.cache.Add(url, data)
 	}
-	body, err := io.ReadAll(res.Body)
-	defer res.Body.Close()
-	if err != nil {
-		return Locations{}, err
-	}
-
 	locationsResp := Locations{}
-	err = json.Unmarshal(body, &locationsResp)
+	err := json.Unmarshal(data, &locationsResp)
 	if err != nil {
 		return Locations{}, err
 	}

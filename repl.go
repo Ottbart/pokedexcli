@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Ottbart/pokedexcli/internal/pokeAPI"
+	"github.com/Ottbart/pokedexcli/internal/pokeapi"
 )
 
 type command struct {
@@ -16,7 +16,7 @@ type command struct {
 }
 
 type config struct {
-	pokeapiClient    pokeAPI.Client
+	pokeapiClient    pokeapi.Client
 	nextLocationsURL *string
 	prevLocationsURL *string
 }
@@ -40,7 +40,7 @@ func startRepl(cfg *config) {
 			description: "Display list of next areas on the map of the Pokemon world",
 			callback:    commandMap,
 		},
-		"mapback": {
+		"mapb": {
 			name:        "mapb",
 			description: "Display list of previous areas on the map of the Pokemon world",
 			callback:    commandMapBack,
@@ -63,7 +63,7 @@ func startRepl(cfg *config) {
 				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			}
 		} else {
-			fmt.Fprintf(os.Stderr, "Unknown command: %s\n", cleanedInput[0])
+			fmt.Fprintf(os.Stderr, "Unknown command: %s\nType 'help' for a list of available commands.\n", cleanedInput[0])
 		}
 	}
 

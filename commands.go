@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 )
@@ -40,6 +41,9 @@ func commandMap(cfg *config) error {
 
 func commandMapBack(cfg *config) error {
 	// Display a list of previous areas on the map of the Pokemon world
+	if cfg.prevLocationsURL == nil {
+		return errors.New("you're on the first page")
+	}
 	locationsResp, err := cfg.pokeapiClient.GetLocations(cfg.prevLocationsURL)
 	if err != nil {
 		return err
