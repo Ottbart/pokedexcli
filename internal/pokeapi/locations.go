@@ -6,7 +6,7 @@ import (
 	"io"
 )
 
-func (c *Client) GetLocations(nextLocationsURL *string) (Locations, error) {
+func (c *Client) GetLocations(nextLocationsURL *string) (LocationRequest, error) {
 	url := baseURL + "/location-area/"
 	if nextLocationsURL != nil {
 		url = *nextLocationsURL
@@ -17,22 +17,22 @@ func (c *Client) GetLocations(nextLocationsURL *string) (Locations, error) {
 	} else {
 		res, err := c.httpClient.Get(url)
 		if err != nil {
-			return Locations{}, err
+			return LocationRequest{}, err
 		}
 		defer res.Body.Close()
 		if res.StatusCode > 299 {
-			return Locations{}, fmt.Errorf("response failed with status code: %d", res.StatusCode)
+			return LocationRequest{}, fmt.Errorf("response failed with status code: %d", res.StatusCode)
 		}
 		data, err = io.ReadAll(res.Body)
 		if err != nil {
-			return Locations{}, err
+			return LocationRequest{}, err
 		}
 		c.cache.Add(url, data)
 	}
-	locationsResp := Locations{}
+	locationsResp := LocationRequest{}
 	err := json.Unmarshal(data, &locationsResp)
 	if err != nil {
-		return Locations{}, err
+		return LocationRequest{}, err
 	}
 
 	return locationsResp, nil

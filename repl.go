@@ -12,7 +12,7 @@ import (
 type command struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(*config, ...string) error
 }
 
 type config struct {
@@ -45,6 +45,11 @@ func startRepl(cfg *config) {
 			description: "Display list of previous areas on the map of the Pokemon world",
 			callback:    commandMapBack,
 		},
+		"explore": {
+			name:        "explore <area_name>",
+			description: "Shows the list of Pokemon in the given area",
+			callback:    commandExplore,
+		},
 	}
 	// Create a new scanner to read from standard input
 	scanner := bufio.NewScanner(os.Stdin)
@@ -57,9 +62,17 @@ func startRepl(cfg *config) {
 		}
 		input := scanner.Text()
 		cleanedInput := cleanInput(input)
+		if len(cleanedInput) == 0 {
+			continue
+		}
 
-		if cmd, exists := cliCommands[cleanedInput[0]]; exists {
-			if err := cmd.callback(cfg); err != nil {
+		command := cleanedInput[0]
+		args := []string{}
+		if len(cleanedInput) > 0 {
+			args = cleanedInput[1:]
+		}
+		if cmd, exists := cliCommands[command]; exists {
+			if err := cmd.callback(cfg, args...); err != nil {
 				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 			}
 		} else {
