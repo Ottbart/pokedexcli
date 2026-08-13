@@ -93,6 +93,42 @@ func commandCatch(cfg *config, pokemonName ...string) error {
 		fmt.Printf("%s escaped!\n", pokemon.Name)
 		return nil
 	}
+	cfg.caughtPokemon[pokemon.Name] = pokemon
 	fmt.Printf("Caught %s!\n", pokemon.Name)
+	fmt.Println("You may now inspect it with the inspect command.")
+	return nil
+}
+
+func commandInspect(cfg *config, pokemonName ...string) error {
+	// Inspect a caught Pokemon by name
+	if len(pokemonName) != 1 {
+		return errors.New("please provide a valid Pokemon name to inspect")
+	}
+	if _, exists := cfg.caughtPokemon[pokemonName[0]]; !exists {
+		return errors.New("you haven't caught this Pokemon yet")
+	}
+	pokemon := cfg.caughtPokemon[pokemonName[0]]
+	fmt.Printf("Inspecting %s...\n", pokemon.Name)
+	fmt.Printf("ID: %d\n", pokemon.ID)
+	fmt.Printf("Height: %d\n", pokemon.Height)
+	fmt.Printf("Weight: %d\n", pokemon.Weight)
+	fmt.Printf("Base Experience: %d\n", pokemon.BaseExperience)
+	fmt.Println("Abilities:")
+	for _, ability := range pokemon.Abilities {
+		fmt.Printf("- %s\n", ability.Ability.Name)
+	}
+	return nil
+}
+
+func commandPokedex(cfg *config, args ...string) error {
+	// Display a list of all caught Pokemon in the pokedex
+	if len(cfg.caughtPokemon) == 0 {
+		fmt.Println("You haven't caught any Pokemon yet.")
+		return nil
+	}
+	fmt.Println("Caught Pokemon:")
+	for name := range cfg.caughtPokemon {
+		fmt.Println(name)
+	}
 	return nil
 }
