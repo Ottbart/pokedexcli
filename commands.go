@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 )
 
@@ -17,7 +18,7 @@ func commandHelp(cfg *config, args ...string) error {
 	// Display available commands and their descriptions
 	fmt.Println("Welcome to the Pokedex!")
 	fmt.Println("Usage:")
-	for _, cmd := range cliCommands {
+	for _, cmd := range cfg.commands {
 		fmt.Printf("%s: %s\n", cmd.name, cmd.description)
 	}
 	return nil
@@ -73,5 +74,25 @@ func commandExplore(cfg *config, areaName ...string) error {
 		fmt.Println(pokemon.Pokemon.Name)
 	}
 
+	return nil
+}
+
+func commandCatch(cfg *config, pokemonName ...string) error {
+	// Catch a Pokemon by name
+	if len(pokemonName) != 1 {
+		return errors.New("please provide a valid Pokemon name to catch")
+	}
+	pokemon, err := cfg.pokeapiClient.GetPokemonByName(pokemonName[0])
+	if err != nil {
+		return err
+	}
+	res := rand.Intn(pokemon.BaseExperience)
+
+	fmt.Printf("Throwing a Pokeball at %s...\n", pokemon.Name)
+	if res > 40 {
+		fmt.Printf("%s escaped!\n", pokemon.Name)
+		return nil
+	}
+	fmt.Printf("Caught %s!\n", pokemon.Name)
 	return nil
 }
